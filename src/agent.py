@@ -7,6 +7,7 @@ import numpy as np
 from collections import deque
 from keras.models import Sequential
 from keras.optimizers import Adam
+from keras.layers import Dense
 
 
 class DQLAgent(object):
@@ -30,6 +31,9 @@ class DQLAgent(object):
         model = Sequential()
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
+        model.add(Dense(24, input_dim=self.state_size, activation='tanh'))
+        model.add(Dense(48, activation='tanh'))
+        model.add(Dense(self.action_size, activation='linear'))
 
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
         return model
@@ -40,6 +44,7 @@ class DQLAgent(object):
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # It should change (or not) the value of self.epsilon
+        pass
 
     def save(self, output: str):
         self.model.save(output)
