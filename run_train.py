@@ -26,7 +26,7 @@ if __name__ == '__main__':
         [(0, 0), (0.5, 1), (0, 2), (2, 2), (3, 1), (6, 2), (6, 0)], width=0.3)
 
     render = args.ui.lower() != 'false'
-    env = Environment(circuit=circuit, render=render)
+    env = Environment(circuit=circuit, render=False)
 
     agent = DQLAgent(
         state_size=len(env.current_state), action_size=len(env.actions),

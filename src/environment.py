@@ -8,7 +8,6 @@ class Environment(object):
     def __init__(self, circuit, render=False):
         self.circuit = circuit
         self.car = Car(self.circuit, num_sensors=self.NUM_SENSORS)
-
         # To render the environment
         self.render = render
         if render:
@@ -20,7 +19,6 @@ class Environment(object):
         for turn_step in range(-2, 3, 1):
             for speed_step in range(-1, 2, 1):
                 self.actions.append((speed_step, turn_step))
-
         self.count = 0
 
     def reward(self) -> float:
@@ -28,7 +26,10 @@ class Environment(object):
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # This should return a float"""
-        return 0.0
+
+        self.reward_val = self.circuit.progression
+        return self.reward_val
+
 
     def isEnd(self) -> bool:
         """Is the episode over ?"""
@@ -36,6 +37,9 @@ class Environment(object):
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # Should return true if we have reached the end of an episode, False
         # otherwise
+        # print(self.reward_val)
+        if not self.car.in_circuit() or self.car.speed == 0:
+            return True
         return False
 
     def reset(self):

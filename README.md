@@ -1,5 +1,7 @@
 # Self-driving car with Deep-Q Network
 
+![](http://g.recordit.co/1o05KRvxKX.gif)
+
 Start by installing the requirements:
 ```
 sudo pip3 install -r requirements

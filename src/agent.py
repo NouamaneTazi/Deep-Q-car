@@ -44,7 +44,8 @@ class DQLAgent(object):
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # It should change (or not) the value of self.epsilon
-        pass
+        if self.epsilon > 0.01:
+            self.epsilon *= 0.99
 
     def save(self, output: str):
         self.model.save(output)
@@ -62,11 +63,16 @@ class DQLAgent(object):
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
 
-    def act(self, state, greedy=True):
+    def act(self, state, env, greedy=True):
         # !!!!  TODO(students): implements an epsilon greedy policy here   !!!!
         # Make sure that if greedy is True, the policy should be greedy
         # As it is the policy is just plain greedy....
-        return np.argmax(self.model.predict(state))
+
+        if greedy or np.random.random() > self.epsilon:
+            return np.argmax(self.model.predict(state))
+        else:
+            return random.randrange(len(env.actions))
+
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
@@ -98,7 +104,7 @@ class DQLAgent(object):
         num_steps = 0
         while num_steps < self.max_steps:
             num_steps += 1
-            action = self.act(state, greedy=greedy)
+            action = self.act(state, env, greedy=greedy)
             next_state, reward, done = env.step(action, greedy)
             next_state = np.reshape(next_state, [1, self.state_size])
 
@@ -116,10 +122,12 @@ class DQLAgent(object):
 
     def train(
             self, env, episodes, minibatch, output='weights.h5', render=False):
+        best_r = 0.0
         for e in range(episodes):
             r, _ = self.run_once(env, train=True, greedy=False)
-            print("episode: {}/{}, return: {}, e: {:.2}".format(
-                e, episodes, r, self.epsilon))
+            if r > best_r: best_r = r
+            print("episode: {}/{}, return: {:.2}/{:.2}, e: {:.2}".format(
+                e, episodes, r, best_r, self.epsilon))
 
             if len(self.memory) > minibatch:
                 self.replay(minibatch)
