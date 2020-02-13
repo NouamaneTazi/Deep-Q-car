@@ -14,7 +14,7 @@ from keras.layers import Dense
 class DQLAgent(object):
     def __init__(
             self, state_size=-1, action_size=-1,
-            max_steps=200, gamma=1.0, epsilon=0.9, learning_rate=0.01, filename="weights1.h5"):
+            max_steps=200, gamma=1.0, epsilon=.001, learning_rate=0.01, filename="weights.h5"):
         self.state_size = state_size # 6
         self.action_size = action_size
         self.max_steps = max_steps
@@ -33,8 +33,9 @@ class DQLAgent(object):
         model = Sequential()
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
-        model.add(Dense(24, input_dim=self.state_size, activation='tanh'))
-        model.add(Dense(48, activation='tanh'))
+        model.add(Dense(24, input_dim=self.state_size, activation='relu'))
+        model.add(Dense(48, activation='relu'))
+        # model.add(Dense(24, activation='relu'))
         model.add(Dense(self.action_size, activation='linear'))
 
         model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate, decay=.01))
@@ -49,7 +50,7 @@ class DQLAgent(object):
         # self.epsilon -= (0.9 - 0.1) / self.NUM_EPISODES
         # self.epsilon = 0.8*abs(np.sin(self.count/100))
         if self.epsilon > .01:
-            self.epsilon *= 0.995
+            self.epsilon *= 0.9995
 
 
     def save(self, output: str):
@@ -126,28 +127,48 @@ class DQLAgent(object):
         return returns, num_steps
 
     def train(
-            self, env, episodes, minibatch, output='weights.h5', render=False):
+            self, env, episodes, minibatch, output='weights.h5', graph=False):
         best_r = 0.0
-        R, E= [], []
-        # plt.ion()
+        # R, E, GR= [0]*700, [0]*700, [0]*700
+        R, E, GR= [], [], []
+        if graph:
+            fig, ax1 = plt.subplots()
+            ax2 = ax1.twinx()
+            plt.ion()
         self.NUM_EPISODES = episodes
+        self.flag = False
         for e in range(episodes):
-            r, _ = self.run_once(env, train=True, greedy=False)
-            R.append(r)
-            E.append(self.epsilon)
+            self.flag = not self.flag
+            r, _ = self.run_once(env, train=True, greedy=self.flag)
+            if self.flag:
+                if r > best_r:
+                    print("SAVED")
+                    self.save(output)
+                GR.append(r)
+                # GR.pop(0)
+            else:
+                R.append(r)
+                E.append(self.epsilon)
+                # R.pop(0)
+                # E.pop(0)
             if r > best_r: best_r = r
-            print("episode: {}/{}, return: {:.2}/{:.2}, e: {}".format(
+            print("episode: {}/{}, return: {:2.2f}/{:2.2f}, e: {}".format(
                 e, episodes, r, best_r, self.epsilon))
 
             if len(self.memory) > minibatch:
                 self.replay(minibatch)
-                self.save(output)
-            # plt.clf()
-        plt.plot(R)
-        plt.plot(E)
-            # plt.draw()
-            # plt.pause(0.0001)
-        plt.show()
+                # self.save(output)
+            if graph:
+                plt.clf()
+                ax1.plot(R, color='red')
+                ax1.plot(GR, color='green')
+                ax2.plot(E, color='blue')
+                ax2.set_ylim([0,1])
+                plt.axes(ax1)
+                plt.axes(ax2)
+                plt.draw()
+                plt.pause(0.0001)
+        # plt.show()
         # Finally runs a greedy one
         r, n = self.run_once(env, train=False, greedy=True)
         self.save(output)

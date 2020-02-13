@@ -26,7 +26,6 @@ class Environment(object):
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # This should return a float"""
-
         self.reward_val = self.circuit.progression
         return self.reward_val
 
@@ -38,7 +37,7 @@ class Environment(object):
         # Should return true if we have reached the end of an episode, False
         # otherwise
         # print(self.reward_val)
-        if not self.car.in_circuit() or self.car.speed == 0:
+        if not self.car.in_circuit() or self.car.speed < 10e-5:
             return True
         return False
 
@@ -57,6 +56,7 @@ class Environment(object):
     def step(self, i: int, greedy):
         """Takes action i and returns the new state, the reward and if we have
         reached the end"""
+        # print(self.car.speed)
         self.count += 1
         self.car.action(*self.actions[i])
 
