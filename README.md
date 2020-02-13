@@ -2,6 +2,10 @@
 
 ![](http://g.recordit.co/1o05KRvxKX.gif)
 
+#Refs :
+* https://www.novatec-gmbh.de/en/blog/deep-q-networks/
+* https://gist.github.com/bigsnarfdude/ed360e53ead31d5a47a6874ec6e58fb0
+
 Start by installing the requirements:
 ```
 sudo pip3 install -r requirements

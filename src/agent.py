@@ -3,6 +3,7 @@ import keras.models
 import os
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 
 from collections import deque
 from keras.models import Sequential
@@ -13,8 +14,8 @@ from keras.layers import Dense
 class DQLAgent(object):
     def __init__(
             self, state_size=-1, action_size=-1,
-            max_steps=200, gamma=1.0, epsilon=1.0, learning_rate=0.1):
-        self.state_size = state_size
+            max_steps=200, gamma=1.0, epsilon=0.9, learning_rate=0.01, filename="weights1.h5"):
+        self.state_size = state_size # 6
         self.action_size = action_size
         self.max_steps = max_steps
         self.memory = deque(maxlen=2000)
@@ -22,7 +23,8 @@ class DQLAgent(object):
         self.epsilon = epsilon  # exploration rate
         self.learning_rate = learning_rate  # learning_rate
         if self.state_size > 0 and self.action_size > 0:
-            self.model = self.build_model()
+            if filename: self.load(filename)
+            else: self.model = self.build_model()
 
         self.count = 0
 
@@ -35,7 +37,7 @@ class DQLAgent(object):
         model.add(Dense(48, activation='tanh'))
         model.add(Dense(self.action_size, activation='linear'))
 
-        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+        model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate, decay=.01))
         return model
 
     def updateEpsilon(self):
@@ -44,8 +46,11 @@ class DQLAgent(object):
 
         # TODO(students): !!!!!!!!! IMPLEMENT THIS !!!!!!!!!!!!!!  """
         # It should change (or not) the value of self.epsilon
-        if self.epsilon > 0.01:
-            self.epsilon *= 0.99
+        # self.epsilon -= (0.9 - 0.1) / self.NUM_EPISODES
+        # self.epsilon = 0.8*abs(np.sin(self.count/100))
+        if self.epsilon > .01:
+            self.epsilon *= 0.995
+
 
     def save(self, output: str):
         self.model.save(output)
@@ -123,16 +128,26 @@ class DQLAgent(object):
     def train(
             self, env, episodes, minibatch, output='weights.h5', render=False):
         best_r = 0.0
+        R, E= [], []
+        # plt.ion()
+        self.NUM_EPISODES = episodes
         for e in range(episodes):
             r, _ = self.run_once(env, train=True, greedy=False)
+            R.append(r)
+            E.append(self.epsilon)
             if r > best_r: best_r = r
-            print("episode: {}/{}, return: {:.2}/{:.2}, e: {:.2}".format(
+            print("episode: {}/{}, return: {:.2}/{:.2}, e: {}".format(
                 e, episodes, r, best_r, self.epsilon))
 
             if len(self.memory) > minibatch:
                 self.replay(minibatch)
                 self.save(output)
-
+            # plt.clf()
+        plt.plot(R)
+        plt.plot(E)
+            # plt.draw()
+            # plt.pause(0.0001)
+        plt.show()
         # Finally runs a greedy one
         r, n = self.run_once(env, train=False, greedy=True)
         self.save(output)

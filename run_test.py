@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--max_steps', type=int, default=200)
     parser.add_argument('--gamma', type=float, default=1.0)
-    parser.add_argument('--model', type=str)
+    parser.add_argument('--model', type=str, default="weights1.h5")
     args = parser.parse_args()
 
     agent = DQLAgent(gamma=args.gamma, max_steps=args.max_steps)
